@@ -53,7 +53,7 @@ def perform_external_validations(msg_list):
 
 ### Validate things not covered by the validation library
 def perform_internal_validations(msg_list):
-    sorted_list = sorted(msg_list, key=lambda msg: (json.loads(msg)['metadata']['logFileName'], json.loads(msg)['metadata']['serialId']['recordId']))
+    #sorted_list = sorted(msg_list, key=lambda msg: (json.loads(msg)['metadata']['logFileName'], json.loads(msg)['metadata']['serialId']['recordId']))
     sorted_list = sorted(msg_list, key=lambda msg: (json.loads(msg)['metadata']['recordId'], json.loads(msg)['metadata']['serialId']['logFileName']))
     perform_sequential_validations(sorted_list)
 
