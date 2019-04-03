@@ -7,6 +7,7 @@ from odevalidator import TestCase
 
 ### Data source config
 CONFIG_FILE = "./bsmLogDuringEvent.ini"
+CHECKABLE_FILE_PREFIX = "bsmLogDuringEvent"
 S3_BUCKET = "usdot-its-cvpilot-public-data"
 DATA_PROVIDER = "wydot"
 MESSAGE_TYPE = "BSM"
@@ -18,34 +19,71 @@ SEND_EMAIL_ALERTS = False
 SOURCE_EMAIL = "fake@email.com"
 
 def lambda_handler(event, context):
+    test_case = TestCase(CONFIG_FILE)
     s3_client = boto3.client('s3')
 
     ddate = datetime.datetime.now()
     prefix_string = "%s/%s/%s/%s/%s" % (DATA_PROVIDER, MESSAGE_TYPE, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2))
+    # prefix_string = "wydot/BSM/2019/04"
 
     s3_file_list = list_s3_files_matching_prefix(s3_client, prefix_string)
+    print("Number of files found matching prefix string: %d" % len(s3_file_list))
 
+    log_file_list = []
     msg_queue = queue.Queue()
     for filename in s3_file_list:
         record_list = extract_records_from_file(s3_client, filename)
-        [msg_queue.put(record) for record in record_list]
+        for record in record_list:
+            log_file_name = json.loads(record)['metadata']['logFileName']
+            if CHECKABLE_FILE_PREFIX in log_file_name:
+                if log_file_name not in log_file_list:
+                    log_file_list.append(log_file_name)
+                msg_queue.put(record)
 
+    print("Log files to be analyzed: [%s]" % ", ".join(log_file_list))
+    print("S3 files to be analyzed: [%s]" % ", ".join(s3_file_list))
 
-    # print(list(msg_queue.queue))
+    print("Found %d records matching prefix string" % msg_queue.qsize())
 
-    test_case = TestCase(CONFIG_FILE)
     validation_results = test_case.validate_queue(msg_queue)
 
-    if list_contains_no_errors(validation_results['Results']):
-        print("No validation errors detected.")
+    num_errors = 0
+    num_validations = 0
+    error_dict = {}
+    for result in validation_results['Results']:
+        num_validations += len(result['Validations'])
+        for validation in result['Validations']:
+            if validation['Valid'] == False:
+                num_errors += 1
+                if validation['Details'] in error_dict:
+                    error_dict[validation['Details']] += 1
+                else:
+                    error_dict[validation['Details']] = 1
+
+    for error in error_dict:
+        print("Error: '%s', Occurrences: '%d'" % (error, error_dict[error]))
+
+    if num_errors > 0:
+        print('[FAILED] ============================================================================')
+        print('[FAILED] Validation has failed! Detected %d errors out of %d total validation checks.' % (num_errors, num_validations))
+        print('[FAILED] ============================================================================')
     else:
-        print("Validation failed, errors detected.")
-        if SEND_EMAIL_ALERTS:
-            print("Sending email alert.")
-            send_report("Validation failed, detected %d errors out of %d messages analyzed. ")
-        else:
-            print("Sending email alert.")
+        print('[SUCCESS] ===========================================================================')
+        print('[SUCCESS] Validation has passed. Detected no errors out of %d total validation checks.' % (num_validations))
+        print('[SUCCESS] ===========================================================================')
+
     return
+
+    # if list_contains_no_errors(validation_results['Results']):
+    #     print("No validation errors detected.")
+    # else:
+    #     print("Validation failed, errors detected.")
+    #     if SEND_EMAIL_ALERTS:
+    #         print("Sending email alert.")
+    #         send_report("Validation failed, detected %d errors out of %d messages analyzed. ")
+    #     else:
+    #         print("Sending email alert.")
+    # return
 
 ###
 def send_report(message):
@@ -105,5 +143,9 @@ def list_s3_files_matching_prefix(s3_client, prefix_string):
         Prefix=prefix_string,
     )
     filenames = []
-    [filenames.append(item['Key']) for item in response.get('Contents')]
+    if response.get('Contents'):
+        [filenames.append(item['Key']) for item in response.get('Contents')]
     return filenames
+
+if __name__ == '__main__':
+    lambda_handler(None, None)
