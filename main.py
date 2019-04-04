@@ -23,8 +23,8 @@ def lambda_handler(event, context):
     s3_client = boto3.client('s3')
 
     ddate = datetime.datetime.now()
-    prefix_string = "%s/%s/%s/%s/%s" % (DATA_PROVIDER, MESSAGE_TYPE, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2))
-    # prefix_string = "wydot/BSM/2019/04"
+    # prefix_string = "%s/%s/%s/%s/%s" % (DATA_PROVIDER, MESSAGE_TYPE, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2))
+    prefix_string = "wydot/BSM/2019/04"
 
     s3_file_list = list_s3_files_matching_prefix(s3_client, prefix_string)
     print("Number of files found matching prefix string: %d" % len(s3_file_list))
@@ -32,6 +32,7 @@ def lambda_handler(event, context):
     log_file_list = []
     msg_queue = queue.Queue()
     for filename in s3_file_list:
+        print("Analyzing file '%s'" % filename)
         record_list = extract_records_from_file(s3_client, filename)
         for record in record_list:
             log_file_name = json.loads(record)['metadata']['logFileName']
@@ -40,37 +41,42 @@ def lambda_handler(event, context):
                     log_file_list.append(log_file_name)
                 msg_queue.put(record)
 
-    print("Log files to be analyzed: [%s]" % ", ".join(log_file_list))
-    print("S3 files to be analyzed: [%s]" % ", ".join(s3_file_list))
+        print("Log files to be analyzed: [%s]" % ", ".join(log_file_list))
+        print("S3 files to be analyzed: [%s]" % ", ".join(s3_file_list))
+        print("Found %d records matching prefix string" % msg_queue.qsize())
 
-    print("Found %d records matching prefix string" % msg_queue.qsize())
+        validation_results = test_case.validate_queue(msg_queue)
 
-    validation_results = test_case.validate_queue(msg_queue)
+        num_errors = 0
+        num_validations = 0
+        error_dict = {}
+        for result in validation_results['Results']:
+            num_validations += len(result['Validations'])
+            for validation in result['Validations']:
+                if validation['Valid'] == False:
+                    num_errors += 1
+                    validation_message = validation['Details']
+                    # if validation.get('Record'):
+                    #     print("Validation thing type = %s", type(validation['Record']))
+                    #     validation_message = "Error: %s, Filename: %s" % (validation['Details'], json.loads(validation['Record'])['metadata']['logFileName'])
+                    # else:
+                    #     validation_message = validation['Details']
+                    if validation_message in error_dict:
+                        error_dict[validation_message] += 1
+                    else:
+                        error_dict[validation_message] = 1
 
-    num_errors = 0
-    num_validations = 0
-    error_dict = {}
-    for result in validation_results['Results']:
-        num_validations += len(result['Validations'])
-        for validation in result['Validations']:
-            if validation['Valid'] == False:
-                num_errors += 1
-                if validation['Details'] in error_dict:
-                    error_dict[validation['Details']] += 1
-                else:
-                    error_dict[validation['Details']] = 1
+        for error in error_dict:
+            print("'%s', Occurrences: '%d'" % (error, error_dict[error]))
 
-    for error in error_dict:
-        print("Error: '%s', Occurrences: '%d'" % (error, error_dict[error]))
-
-    if num_errors > 0:
-        print('[FAILED] ============================================================================')
-        print('[FAILED] Validation has failed! Detected %d errors out of %d total validation checks.' % (num_errors, num_validations))
-        print('[FAILED] ============================================================================')
-    else:
-        print('[SUCCESS] ===========================================================================')
-        print('[SUCCESS] Validation has passed. Detected no errors out of %d total validation checks.' % (num_validations))
-        print('[SUCCESS] ===========================================================================')
+        if num_errors > 0:
+            print('[FAILED] ============================================================================')
+            print('[FAILED] Validation has failed! Detected %d errors out of %d total validation checks.' % (num_errors, num_validations))
+            print('[FAILED] ============================================================================')
+        else:
+            print('[SUCCESS] ===========================================================================')
+            print('[SUCCESS] Validation has passed. Detected no errors out of %d total validation checks.' % (num_validations))
+            print('[SUCCESS] ===========================================================================')
 
     return
 
