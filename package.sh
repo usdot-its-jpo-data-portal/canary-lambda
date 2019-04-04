@@ -1,5 +1,4 @@
 #!/bin/bash
-mkdir package
-pip install git+https://github.com/usdot-jpo-ode/ode-output-validator-library.git --upgrade --target ./package
-zip -r odevalidator.zip main.py package/
-echo "Lambda package created in function.zip"
+pip install -r requirements.txt --upgrade --target .
+zip -r canary.zip main.py odevalidator.py result.py sequential.py bsmLogDuringEvent.ini odevalidator*/
+echo "Created package in canary.zip"
