@@ -46,6 +46,8 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 
 ## Configuration
 
+**Note: This configuration is still in progress and will be added in the future.**
+
 Configuration is _currently_ done in the code (in the future all configuration will be centralized into a CloudFormation template). You may change these values either via the Lambda UI or locally and then repackage your function and reupload the zip.
 
 ```
