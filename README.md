@@ -46,7 +46,7 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 
 ## Configuration
 
-Configuration is done in the code. Change these values either via the Lambda UI or locally and then repackage your function and reupload the zip.
+Configuration is _currently_ done in the code (in the future all configuration will be centralized into a CloudFormation template). You may change these values either via the Lambda UI or locally and then repackage your function and reupload the zip.
 
 ```
 S3_BUCKET = "name-of-your-s3-bucket"  # Name of the S3 bucket that the function will analyze for data
