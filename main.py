@@ -12,8 +12,6 @@ USE_STATIC_PREFIX = False
 STATIC_PREFIX = "wydot/BSM/2019/04"
 
 ### Data source config
-CONFIG_FILE = "./bsmLogDuringEvent.ini"
-CHECKABLE_FILE_PREFIX = "bsmLogDuringEvent"
 S3_BUCKET = "usdot-its-cvpilot-public-data"
 DATA_PROVIDER = "wydot"
 MESSAGE_TYPE = "BSM"
@@ -46,7 +44,7 @@ def validate(local_test):
         logger.setLevel(logging.INFO)
 
     # Begin validation routine
-    test_case = TestCase(CONFIG_FILE)
+    test_case = TestCase()
 
     prefix_string = ""
     if USE_STATIC_PREFIX:
@@ -67,11 +65,9 @@ def validate(local_test):
         logger.info("Analyzing file '%s'" % filename)
         record_list = extract_records_from_file(local_test, filename)
         for record in record_list:
+            msg_queue.put(record)
             log_file_name = json.loads(record)['metadata']['logFileName']
-            if log_file_name not in log_file_list:
-                log_file_list.append(log_file_name)
-            if CHECKABLE_FILE_PREFIX in log_file_name:
-                msg_queue.put(record)
+
 
         logger.info("Log files found in current S3 file: [%s]" % ", ".join(log_file_list))
         logger.info("Analyzable records in current S3 file: %d out of %d" % (msg_queue.qsize(), len(record_list)))
