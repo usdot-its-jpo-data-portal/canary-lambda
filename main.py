@@ -5,6 +5,7 @@ import queue
 import logging
 from decimal import Decimal
 from odevalidator import TestCase
+from emailer import Emailer
 
 ### Data source configuration settings
 USE_STATIC_PREFIX = False
@@ -24,8 +25,13 @@ INCLUDE_VERBOSE_REPORT_AS_ATTACHMENT = True
 SOURCE_EMAIL = "sender@email.com"
 DESTINATION_EMAIL = "receiver@email.com"
 
-def lambda_handler(event, context):
+### For local testing
+LOCAL_TEST_FILE = "test/data.txt"
 
+def lambda_handler(event, context):
+    validate(False)
+
+def validate(local_test):
     # Setup logger and if specified, write logs to output file
     root = logging.getLogger()
     if root.handlers: # Remove default AWS Lambda logging configuration
@@ -41,7 +47,6 @@ def lambda_handler(event, context):
 
     # Begin validation routine
     test_case = TestCase(CONFIG_FILE)
-    s3_client = boto3.client('s3')
 
     prefix_string = ""
     if USE_STATIC_PREFIX:
@@ -50,7 +55,7 @@ def lambda_handler(event, context):
         ddate = datetime.datetime.now()
         prefix_string = "%s/%s/%s/%s/%s" % (DATA_PROVIDER, MESSAGE_TYPE, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2))
 
-    s3_file_list = list_s3_files_matching_prefix(s3_client, prefix_string)
+    s3_file_list = list_s3_files_matching_prefix(local_test, prefix_string)
     logger.info("Queried for %d S3 files matching prefix string '%s'. Found %d matching files." % (SAMPLE_SIZE, prefix_string, len(s3_file_list)))
     logger.info("Matching files: [%s]" % ", ".join(s3_file_list))
 
@@ -60,7 +65,7 @@ def lambda_handler(event, context):
     msg_queue = queue.Queue()
     for filename in s3_file_list:
         logger.info("Analyzing file '%s'" % filename)
-        record_list = extract_records_from_file(s3_client, filename)
+        record_list = extract_records_from_file(local_test, filename)
         for record in record_list:
             log_file_name = json.loads(record)['metadata']['logFileName']
             if log_file_name not in log_file_list:
@@ -110,87 +115,49 @@ def lambda_handler(event, context):
 
     logger.info("[CANARY FINISHED] Validation complete, detected %d errors out of %d validations." % (total_validations_failed, total_validation_count))
     if SEND_EMAIL_ALERTS:
+        emailer = Emailer()
         logger.info("Sending email alert.")
         email_message = "Validation complete, detected %d errors out of %d validations." % (total_validations_failed, total_validation_count)
         if INCLUDE_VERBOSE_REPORT_AS_ATTACHMENT:
-            send_report_with_attachment(email_message)
+            emailer.send_report_with_attachment(email_message)
         else:
-            send_report(email_message)
-
+            emailer.send_report(email_message)
     return
 
-###
-def send_report(message):
-    ses_client = boto3.client('ses')
-    response = ses_client.send_email(
-        Source=SOURCE_EMAIL,
-        Destination={
-            'ToAddresses': [
-                DESTINATION_EMAIL,
-            ],
-            'CcAddresses': [
-            ],
-            'BccAddresses': [
-            ],
-        },
-        Message={
-            'Subject': {
-                'Charset': 'UTF-8',
-                'Data': '[DATAHUB AUTOMATED ALERT] DataHub Canary Validation Lambda Results'
-            },
-            'Body': {
-                'Text': {
-                    'Charset': 'UTF-8',
-                    'Data': message
-                }
-            }
-        },
-        ReplyToAddresses=[
-        ],
-        ReturnPath='',
-        SourceArn='',
-        ReturnPathArn='',
-    )
 
-def send_report_with_attachment(message):
-    response = client.send_raw_email(
-        Destination={
-            'ToAddresses': [
-                DESTINATION_EMAIL,
-            ],
-            'CcAddresses': [
-            ],
-            'BccAddresses': [
-            ],
-        },
-        FromArn='',
-        RawMessage={
-            'Data': 'From: sender@example.com\nTo: recipient@example.com\nSubject: Test email (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary="NextPart"\n\n--NextPart\nContent-Type: text/plain\n\nThis is the message body.\n\n--NextPart\nContent-Type: text/plain;\nContent-Disposition: attachment; filename="attachment.txt"\n\nThis is the text in the attachment.\n\n--NextPart--',
-        },
-        ReturnPathArn='',
-        Source='',
-        SourceArn='',
-    )
 
 ### Returns a list of records from a given file
-def extract_records_from_file(s3_client, filename):
-    s3_file = s3_client.get_object(
-        Bucket=S3_BUCKET,
-        Key=filename,
-    )
-    return s3_file['Body'].read().splitlines()
+def extract_records_from_file(local_test, filename):
+    if local_test:
+        print("(Local test) Loading test data from local file.")
+        test_records = []
+        with open(LOCAL_TEST_FILE) as test_file:
+            for line in test_file:
+                test_records.append(line)
+        return test_records
+    else:
+        s3_file = boto3.client('s3').get_object(
+            Bucket=S3_BUCKET,
+            Key=filename,
+        )
+        return s3_file['Body'].read().splitlines()
 
 ### Returns filenames from an S3 list files (list_objects) query
-def list_s3_files_matching_prefix(s3_client, prefix_string):
-    response = s3_client.list_objects_v2(
-        Bucket=S3_BUCKET,
-        MaxKeys=SAMPLE_SIZE,
-        Prefix=prefix_string,
-    )
-    filenames = []
-    if response.get('Contents'):
-        [filenames.append(item['Key']) for item in response.get('Contents')]
-    return filenames
+def list_s3_files_matching_prefix(local_test, prefix_string):
+    if local_test:
+        print("(Local test) Skipping S3 file query.")
+        return [LOCAL_TEST_FILE]
+    else:
+        response = boto3.client('s3').list_objects_v2(
+            Bucket=S3_BUCKET,
+            MaxKeys=SAMPLE_SIZE,
+            Prefix=prefix_string,
+        )
+        filenames = []
+        if response.get('Contents'):
+            [filenames.append(item['Key']) for item in response.get('Contents')]
+        return filenames
 
 if __name__ == '__main__':
-    lambda_handler(None, None)
+    print("(Local test) Running local test...")
+    validate(True)
