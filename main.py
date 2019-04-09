@@ -62,7 +62,7 @@ def validate(local_test):
     for filename in s3_file_list:
         logger.info("============================================================================")
         logger.info("Analyzing file '%s'" % filename)
-        record_list = extract_records_from_file(local_test, filename)
+        record_list = extract_records_from_file(s3_client, filename, local_test)
         for record in record_list:
             msg_queue.put(record)
 
@@ -103,7 +103,7 @@ def validate(local_test):
     return
 
 ### Returns a list of records from a given file
-def extract_records_from_file(local_test, filename):
+def extract_records_from_file(s3_client, filename, local_test):
     if local_test:
         print("(Local test) Loading test data from local file.")
         test_records = []
@@ -112,7 +112,7 @@ def extract_records_from_file(local_test, filename):
                 test_records.append(line)
         return test_records
     else:
-        s3_file = boto3.client('s3').get_object(
+        s3_file = s3_client.get_object(
             Bucket=S3_BUCKET,
             Key=filename,
         )
