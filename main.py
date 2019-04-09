@@ -9,7 +9,7 @@ from emailer import Emailer
 
 ### Data source configuration settings
 VERBOSE_OUTPUT = True
-USE_STATIC_PREFIXES = True
+USE_STATIC_PREFIXES = False
 STATIC_PREFIXES = ["wydot/BSM/2019/04/08"]
 S3_BUCKET = "usdot-its-cvpilot-public-data"
 DATA_PROVIDERS = ["wydot"]
