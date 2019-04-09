@@ -10,7 +10,7 @@ from emailer import Emailer
 ### Data source configuration settings
 VERBOSE_OUTPUT = True
 USE_STATIC_PREFIXES = False
-STATIC_PREFIXES = ["wydot/BSM/2019/04/08"]
+STATIC_PREFIXES = ["wydot/BSM/2019/04"]
 S3_BUCKET = "usdot-its-cvpilot-public-data"
 DATA_PROVIDERS = ["wydot"]
 MESSAGE_TYPES = ["BSM"]
@@ -64,7 +64,7 @@ def validate(local_test):
         logger.info("Analyzing file '%s'" % filename)
         record_list = extract_records_from_file(s3_client, filename, local_test)
         for record in record_list:
-            msg_queue.put(record)
+            msg_queue.put(str(record, 'utf-8'))
 
         if msg_queue.qsize() == 0:
             logger.warning("Could not find any records to be validated in S3 file '%s'." % filename)
