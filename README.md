@@ -6,8 +6,6 @@ This canary function is an early warning system that reports corrupt data. It is
 
 It utilizes the [ODE schema validation library](https://github.com/usdot-jpo-ode/ode-output-validator-library) to detect records with missing fields, blank fields, fields that do not match an expected range or value, as well as higher-level validations such as ensuring serial fields are sequential and incremented without gaps.
 
-**Upcoming Feature:** Upon detection of erroneous records, this function will automatically distribute an alert message over email with a summary of the failures found.
-
 ## Requirements
 
 - [Python 3.7](https://www.python.org/downloads/)
@@ -16,8 +14,6 @@ It utilizes the [ODE schema validation library](https://github.com/usdot-jpo-ode
 - [S3 Permissions within AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazons3.html)
   - `s3:Get*`
   - `s3:List*`
-- [SES Permissions within AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazonses.html)
-  - `ses:SendEmail`
 
 ## Deployment
 
@@ -50,18 +46,28 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 
 Configuration is _currently_ done in the code (in the future all configuration will be centralized into a CloudFormation template). You may change these values either via the Lambda UI or locally and then repackage your function and reupload the zip.
 
-```
-S3_BUCKET = "name-of-your-s3-bucket"  # Name of the S3 bucket that the function will analyze for data
-SAMPLE_SIZE = 10                      # How many S3 files to analyze per invocation
-SEND_EMAIL_ALERTS = False             # Whether or not to send failure notifications via email
-SOURCE_EMAIL = "sender@email.com"     # Source email address to use for notifications (must be registered with SES)
-DEST_EMAIL = "receiver@email.com"     # Destination email to which notifications are sent (must be verified with SES)
-```
+| Property            | Type             | Default Value | Description                                                                                 |
+|---------------------|------------------|---------------|---------------------------------------------------------------------------------------------|
+| VERBOSE_OUTPUT      | Boolean          | False         | Increases logging verbosity. Useful for debugging.                                          |
+| USE_STATIC_PREFIXES | Boolean          | False         | Overrides the default behavior which is to query for files uploaded today.                  |
+| STATIC_PREFIXES     | Array of strings | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                         |
+| S3_BUCKET           | String           | n/a           | Name of the S3 bucket containing data to be validated.                                      |
+| DATA_PROVIDERS      | Array of strings | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed. |
+| MESSAGE_TYPES       | Array of strings | ["bsm"]       | Message type(s) to be analyzed.                                                             |
 
 ## Usage
 
 Run the function on a schedule by [setting up a CRON-triggered CloudWatch event](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html).
 
+## Testing
+
+Run a local test by running the function as a standard python3 script: `python main.py`.
+
 ## Limitations
 
-**TODO**
+- Cannot validate REST API TIMs
+- May report false-positive validation errors if the file contains redacted data (such as data that has been processed by the Privacy Protection Module)
+
+## Future Features
+
+**Upcoming Feature:** Upon detection of erroneous records, this function will automatically distribute an alert message over email with a summary of the failures found.
