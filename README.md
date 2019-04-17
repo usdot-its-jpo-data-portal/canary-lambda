@@ -6,7 +6,7 @@ This canary function is an early warning system that reports corrupt data. It is
 
 It utilizes the [ODE schema validation library](https://github.com/usdot-jpo-ode/ode-output-validator-library) to detect records with missing fields, blank fields, fields that do not match an expected range or value, as well as higher-level validations such as ensuring serial fields are sequential and incremented without gaps.
 
-![Canary Diagram](images/canary_diagram.png "Canary Diagram")
+![Canary Diagram](images/canary_figure.png "Canary Diagram")
 
 ## Requirements
 
