@@ -5,7 +5,6 @@ import logging
 import os
 import queue
 from decimal import Decimal
-from emailer import Emailer
 from slacker import SlackMessage
 from odevalidator import TestCase
 
