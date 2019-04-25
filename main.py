@@ -1,27 +1,34 @@
 import boto3
 import datetime
 import json
-import queue
 import logging
+import os
+import queue
 from decimal import Decimal
 from odevalidator import TestCase
-from emailer import Emailer
+from slacker import SlackMessage
 
-### Data source configuration settings
+### Cloudformation configuration settings
+S3_BUCKET = os.environ.get('S3_BUCKET')
+DATA_PROVIDERS = os.environ.get('DATA_PROVIDERS').split(',')
+MESSAGE_TYPES = os.environ.get('MESSAGE_TYPES').split(',')
+SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK')
+
+### Alerting settings
+SEND_SLACK_MESSAGE = True
+
+### Debugging settings
 VERBOSE_OUTPUT = True
 USE_STATIC_PREFIXES = False
 STATIC_PREFIXES = ["wydot/BSM/2019/04"]
-S3_BUCKET = "usdot-its-cvpilot-public-data"
-DATA_PROVIDERS = ["wydot"]
-MESSAGE_TYPES = ["BSM"]
 
-### Local testing
+### Local testing settings
 LOCAL_TEST_FILE = "test/data.txt"
 
 def lambda_handler(event, context):
-    validate(local_test=False)
+    validate(local_test=False, context=context)
 
-def validate(local_test):
+def validate(local_test, context):
     # Setup logger
     root = logging.getLogger()
     if root.handlers: # Remove default AWS Lambda logging configuration
@@ -58,12 +65,14 @@ def validate(local_test):
     log_file_list = []
     total_validation_count = 0
     total_validations_failed = 0
+    records_analyzed = 0
     msg_queue = queue.Queue()
     for filename in s3_file_list:
         logger.info("============================================================================")
         logger.info("Analyzing file '%s'" % filename)
         record_list = extract_records_from_file(s3_client, filename, local_test)
         for record in record_list:
+            records_analyzed += 1
             msg_queue.put(str(record, 'utf-8'))
 
         if msg_queue.qsize() == 0:
@@ -100,6 +109,20 @@ def validate(local_test):
             logger.info("===========================================================================")
 
     logger.info("[CANARY FINISHED] Validation complete, detected %d errors out of %d validations." % (total_validations_failed, total_validation_count))
+    if SEND_SLACK_MESSAGE:
+        slack_message = SlackMessage(
+            success = total_validations_failed == 0,
+            files = s3_file_list,
+            recordcount = records_analyzed,
+            validationcount = total_validation_count,
+            errorcount = total_validations_failed,
+            timestamp = datetime.datetime.now(),
+            function_name = context.function_name,
+            aws_request_id = context.aws_request_id,
+            log_group_name = context.log_group_name,
+            log_stream_name = context.log_stream_name,
+        )
+        slack_message.send(logger, SLACK_WEBHOOK)
     return
 
 ### Returns a list of records from a given file
