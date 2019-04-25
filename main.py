@@ -65,12 +65,14 @@ def validate(local_test, context):
     log_file_list = []
     total_validation_count = 0
     total_validations_failed = 0
+    records_analyzed = 0
     msg_queue = queue.Queue()
     for filename in s3_file_list:
         logger.info("============================================================================")
         logger.info("Analyzing file '%s'" % filename)
         record_list = extract_records_from_file(s3_client, filename, local_test)
         for record in record_list:
+            records_analyzed += 1
             msg_queue.put(str(record, 'utf-8'))
 
         if msg_queue.qsize() == 0:
@@ -111,6 +113,7 @@ def validate(local_test, context):
         slack_message = SlackMessage(
             success = total_validations_failed == 0,
             files = s3_file_list,
+            recordcount = records_analyzed,
             validationcount = total_validation_count,
             errorcount = total_validations_failed,
             timestamp = datetime.datetime.now(),
