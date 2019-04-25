@@ -1,5 +1,5 @@
 import boto3
-import datetime
+from datetime import datetime, timezone
 import json
 import logging
 import os
@@ -46,7 +46,7 @@ def validate(local_test, context):
     if USE_STATIC_PREFIXES:
         prefix_strings.extend(STATIC_PREFIXES)
     else:
-        ddate = datetime.datetime.now()
+        ddate = datetime.now(timezone.utc)
         for provider in DATA_PROVIDERS:
             for mtype in MESSAGE_TYPES:
                 prefix_strings.append("%s/%s/%s/%s/%s" % (provider, mtype, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2)))
@@ -112,11 +112,12 @@ def validate(local_test, context):
     if SEND_SLACK_MESSAGE:
         slack_message = SlackMessage(
             success = total_validations_failed == 0,
+            prefixes = prefix_strings,
             files = s3_file_list,
             recordcount = records_analyzed,
             validationcount = total_validation_count,
             errorcount = total_validations_failed,
-            timestamp = datetime.datetime.now(),
+            timestamp = datetime.now(),
             function_name = context.function_name,
             aws_request_id = context.aws_request_id,
             log_group_name = context.log_group_name,

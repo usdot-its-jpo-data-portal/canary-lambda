@@ -2,9 +2,10 @@ from botocore.vendored import requests
 import json
 
 class SlackMessage():
-    def __init__(self, success, files, recordcount, validationcount, errorcount, timestamp, function_name, aws_request_id, log_group_name, log_stream_name):
+    def __init__(self, success, files, prefixes, recordcount, validationcount, errorcount, timestamp, function_name, aws_request_id, log_group_name, log_stream_name):
         self.validation = "PASSED" if success else "FAILED"
         self.files = files
+        self.prefixes = prefixes
         self.recordcount = recordcount
         self.validationcount = validationcount
         self.errorcount = errorcount
@@ -25,6 +26,13 @@ class SlackMessage():
             		"text": {
             			"type": "mrkdwn",
             			"text": "*Validation:* %s" % self.validation
+            		}
+            	},
+                {
+            		"type": "section",
+            		"text": {
+            			"type": "mrkdwn",
+            			"text": "*Prefixes Queried (%d):* ```%s```" % (len(self.prefixes), "\n".join(self.prefixes))
             		}
             	},
             	{
