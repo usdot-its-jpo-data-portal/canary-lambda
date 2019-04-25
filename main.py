@@ -5,8 +5,8 @@ import logging
 import os
 import queue
 from decimal import Decimal
-from slacker import SlackMessage
 from odevalidator import TestCase
+from slacker import SlackMessage
 
 ### Cloudformation configuration settings
 S3_BUCKET = os.environ.get('S3_BUCKET')
