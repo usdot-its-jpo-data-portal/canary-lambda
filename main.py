@@ -122,7 +122,7 @@ def validate(local_test, context):
             log_group_name = context.log_group_name,
             log_stream_name = context.log_stream_name,
         )
-        slack_message.send(SLACK_WEBHOOK)
+        slack_message.send(logger, SLACK_WEBHOOK)
     return
 
 ### Returns a list of records from a given file

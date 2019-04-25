@@ -14,7 +14,7 @@ class SlackMessage():
         self.log_group_name = log_group_name
         self.log_stream_name = log_stream_name
 
-    def send(self, dest_url):
+    def send(self, logger, dest_url):
         slack_message = {
             "blocks":[
             	{
@@ -88,8 +88,8 @@ class SlackMessage():
             	}
             ]
         }
-        print("Sending slack message to %s" % dest_url)
-        print(json.dumps(slack_message))
+        logger.info("Sending slack message to %s" % dest_url)
+        logger.info(json.dumps(slack_message))
         with requests.Session() as session:
             r = session.post(dest_url, data=json.dumps(slack_message))
-            print("Slack API response: %s [%s]" % (r.status_code, r.reason))
+            logger.info("Slack API response: %s [%s]" % (r.status_code, r.reason))
