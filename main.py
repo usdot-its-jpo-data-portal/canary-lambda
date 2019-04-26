@@ -29,6 +29,7 @@ def lambda_handler(event, context):
     validate(local_test=False, context=context)
 
 def validate(local_test, context):
+    function_start_time = datetime.now()
     # Setup logger
     root = logging.getLogger()
     if root.handlers: # Remove default AWS Lambda logging configuration
@@ -117,7 +118,8 @@ def validate(local_test, context):
             recordcount = records_analyzed,
             validationcount = total_validation_count,
             errorcount = total_validations_failed,
-            timestamp = datetime.now(),
+            starttime = function_start_time,
+            endtime = datetime.now(),
             function_name = context.function_name,
             aws_request_id = context.aws_request_id,
             log_group_name = context.log_group_name,

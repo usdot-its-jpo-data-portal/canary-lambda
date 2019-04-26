@@ -2,14 +2,20 @@ from botocore.vendored import requests
 import json
 
 class SlackMessage():
-    def __init__(self, success, files, prefixes, recordcount, validationcount, errorcount, timestamp, function_name, aws_request_id, log_group_name, log_stream_name):
-        self.validation = "PASSED" if success else "FAILED"
+    def __init__(self, success, files, prefixes, recordcount, validationcount, errorcount, starttime, endtime, function_name, aws_request_id, log_group_name, log_stream_name):
+        if success and validationcount > 0:
+            self.validation = "PASSED"
+        elif success and validationcount == 0:
+            self.validation = "N/A"
+        else:
+            self.validation = "FAILED"
         self.files = files
         self.prefixes = prefixes
         self.recordcount = recordcount
         self.validationcount = validationcount
         self.errorcount = errorcount
-        self.timestamp = timestamp
+        self.starttime = starttime
+        self.endtime = endtime
         self.function_name = function_name
         self.aws_request_id = aws_request_id
         self.log_group_name = log_group_name
@@ -25,7 +31,7 @@ class SlackMessage():
             		"type": "section",
             		"text": {
             			"type": "mrkdwn",
-            			"text": "*Validation:* %s" % self.validation
+            			"text": "*Validation Success:* %s" % self.validation
             		}
             	},
                 {
@@ -67,7 +73,7 @@ class SlackMessage():
             		"type": "section",
             		"text": {
             			"type": "mrkdwn",
-            			"text": "*Timestamp:* %s" % self.timestamp
+            			"text": "*Started At:* %s\n*Completed At:* %s\n*Time Taken:* %.3f seconds" % (self.starttime.strftime("%H:%M:%S"), self.endtime.strftime("%H:%M:%S"), (self.endtime-self.starttime).total_seconds())
             		}
             	},
                 {
