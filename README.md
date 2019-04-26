@@ -49,9 +49,9 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 
 ## Configuration
 
-**Note: These configuration properties are loaded in as environment variables.**
+Some of these variables are general settings that may be changed in the code (Source = Code). To change these, edit them either locally and reupload the file, or change them in the Lambda console editor.
 
-Configuration is _currently_ done in the code (in the future all configuration will be centralized into a CloudFormation template). You may change these values either via the Lambda UI or locally and then repackage your function and reupload the zip.
+Others are secret information (Source = Environment Variable), so you must provide these as environment variables.
 
 | Property            | Type             | Source               | Default Value | Description                                                                                 |
 | ------------------- | ---------------- | -------------------- | ------------- | ------------------------------------------------------------------------------------------- |
