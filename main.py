@@ -1,5 +1,5 @@
 import boto3
-import datetime
+from datetime import datetime, timezone
 import json
 import logging
 import os
@@ -29,6 +29,7 @@ def lambda_handler(event, context):
     validate(local_test=False, context=context)
 
 def validate(local_test, context):
+    function_start_time = datetime.now()
     # Setup logger
     root = logging.getLogger()
     if root.handlers: # Remove default AWS Lambda logging configuration
@@ -46,7 +47,7 @@ def validate(local_test, context):
     if USE_STATIC_PREFIXES:
         prefix_strings.extend(STATIC_PREFIXES)
     else:
-        ddate = datetime.datetime.now()
+        ddate = datetime.now(timezone.utc)
         for provider in DATA_PROVIDERS:
             for mtype in MESSAGE_TYPES:
                 prefix_strings.append("%s/%s/%s/%s/%s" % (provider, mtype, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2)))
@@ -112,11 +113,13 @@ def validate(local_test, context):
     if SEND_SLACK_MESSAGE:
         slack_message = SlackMessage(
             success = total_validations_failed == 0,
+            prefixes = prefix_strings,
             files = s3_file_list,
             recordcount = records_analyzed,
             validationcount = total_validation_count,
             errorcount = total_validations_failed,
-            timestamp = datetime.datetime.now(),
+            starttime = function_start_time,
+            endtime = datetime.now(),
             function_name = context.function_name,
             aws_request_id = context.aws_request_id,
             log_group_name = context.log_group_name,
