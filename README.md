@@ -6,6 +6,8 @@ This canary function is an early warning system that reports corrupt data. It is
 
 It utilizes the [ODE schema validation library](https://github.com/usdot-jpo-ode/ode-output-validator-library) to detect records with missing fields, blank fields, fields that do not match an expected range or value, as well as higher-level validations such as ensuring serial fields are sequential and incremented without gaps.
 
+After the canary completes its execution, it sends a report to Slack.
+
 ![Canary Diagram](images/canary_figure.png "Canary Diagram")
 
 ## Requirements
@@ -16,6 +18,7 @@ It utilizes the [ODE schema validation library](https://github.com/usdot-jpo-ode
 - [S3 Permissions within AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazons3.html)
   - `s3:Get*`
   - `s3:List*`
+- (Optional) Slack and Slack webhook
 
 ## Deployment
 
@@ -41,21 +44,25 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 3. Set the Execution role to one that has the S3 and SES permissions listed in the **Requirements** section above.
 4. Set the **Memory (MB)** to `512 MB` and the **Timeout** to `1 min 0 sec`.
 ![Lambda Settings](images/figure2.png "Lambda Settings")
+5. Set the environment variables.
+![Environment Variables](images/figure3.png "Environment Variables")
 
 ## Configuration
 
-**Note: This configuration is still in progress and will be added in the future.**
+Some of these variables are general settings that may be changed in the code (Source = Code). To change these, edit them either locally and reupload the file, or change them in the Lambda console editor.
 
-Configuration is _currently_ done in the code (in the future all configuration will be centralized into a CloudFormation template). You may change these values either via the Lambda UI or locally and then repackage your function and reupload the zip.
+Others are secret information (Source = Environment Variable), so you must provide these as environment variables.
 
-| Property            | Type             | Default Value | Description                                                                                 |
-|---------------------|------------------|---------------|---------------------------------------------------------------------------------------------|
-| VERBOSE_OUTPUT      | Boolean          | False         | Increases logging verbosity. Useful for debugging.                                          |
-| USE_STATIC_PREFIXES | Boolean          | False         | Overrides the default behavior which is to query for files uploaded today.                  |
-| STATIC_PREFIXES     | Array of strings | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                         |
-| S3_BUCKET           | String           | n/a           | Name of the S3 bucket containing data to be validated.                                      |
-| DATA_PROVIDERS      | Array of strings | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed. |
-| MESSAGE_TYPES       | Array of strings | ["bsm"]       | Message type(s) to be analyzed.                                                             |
+| Property            | Type             | Source               | Default Value | Description                                                                                 |
+| ------------------- | ---------------- | -------------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| VERBOSE_OUTPUT      | Boolean          | Code                 | False         | Increases logging verbosity. Useful for debugging.                                          |
+| USE_STATIC_PREFIXES | Boolean          | Code                 | False         | Overrides the default behavior which is to query for files uploaded today.                  |
+| STATIC_PREFIXES     | Array of strings | Code                 | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                         |
+| S3_BUCKET           | String           | Environment Variable | n/a           | Name of the S3 bucket containing data to be validated.                                      |
+| DATA_PROVIDERS      | Array of strings | Environment Variable | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed. |
+| MESSAGE_TYPES       | Array of strings | Environment Variable | ["bsm"]       | Message type(s) to be analyzed.                                                             |
+| SEND_SLACK_MESSAGE  | Boolean          | Code                 | True          | Upon completion, function will send execution report to slack.                              |
+| SLACK_WEBHOOK       | String           | Environment Variable | n/a           | **WARNING - SECRET!** Slack app integration webhook url to which reports are sent.          |
 
 ## Usage
 
@@ -68,8 +75,3 @@ Run a local test by running the function as a standard python3 script: `python m
 ## Limitations
 
 - Cannot validate REST API TIMs
-- May report false-positive validation errors if the file contains redacted data (such as data that has been processed by the Privacy Protection Module)
-
-## Future Features
-
-**Upcoming Feature:** Upon detection of erroneous records, this function will automatically distribute an alert message over email with a summary of the failures found.
