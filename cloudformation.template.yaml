@@ -27,7 +27,7 @@ Parameters:
       - 'FALSE'
   USESTATICPREFIXES:
     Type: String
-    Default: 'TRUE'
+    Default: 'FALSE'
     AllowedValues:
       - 'TRUE'
       - 'FALSE'
