@@ -49,24 +49,22 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 
 ## Configuration
 
-Some of these variables are general settings that may be changed in the code (Source = Code). To change these, edit them either locally and reupload the file, or change them in the Lambda console editor.
+These configuration properties are sourced from environment variables. To set them locally, run `export PROPERTY_NAME=Value`, or change them in the **Environment variables** section in the AWS Lambda console.
 
-Others are secret information (Source = Environment Variable), so you must provide these as environment variables.
-
-| Property            | Type             | Source               | Default Value | Description                                                                                 |
-| ------------------- | ---------------- | -------------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| VERBOSE_OUTPUT      | Boolean          | Code                 | False         | Increases logging verbosity. Useful for debugging.                                          |
-| USE_STATIC_PREFIXES | Boolean          | Code                 | False         | Overrides the default behavior which is to query for files uploaded today.                  |
-| STATIC_PREFIXES     | Array of strings | Code                 | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                         |
-| S3_BUCKET           | String           | Environment Variable | n/a           | Name of the S3 bucket containing data to be validated.                                      |
-| DATA_PROVIDERS      | Array of strings | Environment Variable | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed. |
-| MESSAGE_TYPES       | Array of strings | Environment Variable | ["bsm"]       | Message type(s) to be analyzed.                                                             |
-| SEND_SLACK_MESSAGE  | Boolean          | Code                 | True          | Upon completion, function will send execution report to slack.                              |
-| SLACK_WEBHOOK       | String           | Environment Variable | n/a           | **WARNING - SECRET!** Slack app integration webhook url to which reports are sent.          |
+| Property            | Type             | Default Value | Description                                                                                 |
+| ------------------- | ---------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| VERBOSE_OUTPUT      | Boolean          | False         | Increases logging verbosity. Useful for debugging.                                          |
+| USE_STATIC_PREFIXES | Boolean          | False         | Overrides the default behavior which is to query for files uploaded today.                  |
+| STATIC_PREFIXES     | Array of strings | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                         |
+| S3_BUCKET           | String           | n/a           | Name of the S3 bucket containing data to be validated.                                      |
+| DATA_PROVIDERS      | Array of strings | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed. |
+| MESSAGE_TYPES       | Array of strings | ["bsm"]       | Message type(s) to be analyzed.                                                             |
+| SEND_SLACK_MESSAGE  | Boolean          | True          | Upon completion, function will send execution report to slack.                              |
+| SLACK_WEBHOOK       | String           | n/a           | **WARNING - SECRET!** Slack app integration webhook url to which reports are sent.          |
 
 ## Usage
 
-Run the function on a schedule by [setting up a CRON-triggered CloudWatch event](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html).
+Run the function on a schedule by [setting up a CRON-triggered CloudWatch event](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html). (Note that the Cloudformation template includes a once-a-day CloudWatch trigger event at 11:59PM UTC).
 
 ## Testing
 
