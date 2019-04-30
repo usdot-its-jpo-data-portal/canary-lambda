@@ -13,6 +13,27 @@ Parameters:
   SLACKWEBHOOK :
     Type : 'AWS::SSM::Parameter::Value<String>'
     Default: SlackWebhook
+  SENDSLACKMESSAGE:
+    Type: String
+    Default: 'TRUE'
+    AllowedValues:
+      - 'TRUE'
+      - 'FALSE'
+  VERBOSEOUTPUT:
+    Type: String
+    Default: 'TRUE'
+    AllowedValues:
+      - 'TRUE'
+      - 'FALSE'
+  USESTATICPREFIXES:
+    Type: String
+    Default: 'TRUE'
+    AllowedValues:
+      - 'TRUE'
+      - 'FALSE'
+  STATIC_PREFIXES:
+    Type: String
+    Default: 'wydot/BSM/2019/04'
 Resources:
   CanaryFunction:
     Type: 'AWS::Serverless::Function'
@@ -29,6 +50,10 @@ Resources:
           DATA_PROVIDERS: !Ref DATAPROVIDERS
           MESSAGE_TYPES: !Ref MESSAGETYPES
           SLACK_WEBHOOK: !Ref SLACKWEBHOOK
+          SEND_SLACK_MESSAGE: !Ref SENDSLACKMESSAGE
+          VERBOSE_OUTPUT: !Ref VERBOSEOUTPUT
+          USE_STATIC_PREFIXES: !Ref USESTATICPREFIXES
+          STATIC_PREFIXES: !Ref STATICPREFIXES
     Events:
       RunCanaryDaily:
         Type: Schedule

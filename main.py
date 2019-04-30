@@ -12,15 +12,15 @@ from slacker import SlackMessage
 S3_BUCKET = os.environ.get('S3_BUCKET')
 DATA_PROVIDERS = os.environ.get('DATA_PROVIDERS').split(',')
 MESSAGE_TYPES = os.environ.get('MESSAGE_TYPES').split(',')
-SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK')
 
 ### Alerting settings
-SEND_SLACK_MESSAGE = True
+SEND_SLACK_MESSAGE = True if os.environ.get('SEND_SLACK_MESSAGE') == 'TRUE' else False
+SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK')
 
 ### Debugging settings
-VERBOSE_OUTPUT = True
-USE_STATIC_PREFIXES = False
-STATIC_PREFIXES = ["wydot/BSM/2019/04"]
+VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT') == 'TRUE' else False
+USE_STATIC_PREFIXES = True if os.environ.get('USE_STATIC_PREFIXES') == 'TRUE' else False
+STATIC_PREFIXES = os.environ.get('STATIC_PREFIXES').split(',')
 
 ### Local testing settings
 LOCAL_TEST_FILE = "test/data.txt"
