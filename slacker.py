@@ -31,7 +31,7 @@ class SlackMessage():
             		"type": "section",
             		"text": {
             			"type": "mrkdwn",
-            			"text": "*Validation Success:* %s" % self.validation
+            			"text": "*Validation Result:* %s" % self.validation
             		}
             	},
                 {
