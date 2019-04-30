@@ -8,7 +8,7 @@ from decimal import Decimal
 from odevalidator import TestCase
 from slacker import SlackMessage
 
-### Cloudformation configuration settings
+### Data source settings
 S3_BUCKET = os.environ.get('S3_BUCKET')
 DATA_PROVIDERS = os.environ.get('DATA_PROVIDERS').split(',')
 MESSAGE_TYPES = os.environ.get('MESSAGE_TYPES').split(',')
