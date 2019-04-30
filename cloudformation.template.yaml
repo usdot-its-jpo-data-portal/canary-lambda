@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Parameters:
+  S3BUCKET:
+    Type: String
+    Default: 'usdot-its-cvpilot-public-data'
+  DATAPROVIDERS:
+    Type: String
+    Default: 'wydot'
+  MESSAGETYPES:
+    Type: String
+    Default: 'BSM'
+  SLACKWEBHOOK :
+    Type : 'AWS::SSM::Parameter::Value<String>'
+    Default: SlackWebhook
+Resources:
+  CanaryFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: CanaryLambdaProd
+      Runtime: python3.7
+      Handler: main.lambda_handler
+      Policies:
+        - AWSRoleforLambdaSES
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3BUCKET
+          DATA_PROVIDERS: !Ref DATAPROVIDERS
+          MESSAGE_TYPES: !Ref MESSAGETYPES
+          SLACK_WEBHOOK: !Ref SLACKWEBHOOK
+    Events:
+      RunCanaryDaily:
+        Type: Schedule
+        Properties:
+          Schedule: cron(59 23 ? * * *) # Run once at the end of the day at 11:59PM UTC (7:59 PM EST)
