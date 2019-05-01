@@ -9,7 +9,9 @@ class SlackMessage():
             self.validation = "N/A"
         else:
             self.validation = "FAILED"
-        self.files = files
+        self.file_count = len(files)
+        self.files_string = "\n".join(files)
+        self.files_string = self.files_string[:2971] # 3000 character maximum for Slack blocks (29 characters for wrap)
         self.prefixes = prefixes
         self.recordcount = recordcount
         self.validationcount = validationcount
@@ -45,7 +47,7 @@ class SlackMessage():
             		"type": "section",
             		"text": {
             			"type": "mrkdwn",
-            			"text": "*Files Analyzed (%d):* ```%s```" % (len(self.files), "\n".join(self.files))
+            			"text": "*Files Analyzed (%d):* ```%s```" % (self.file_count, self.files_string)
             		}
             	},
                 {
@@ -106,4 +108,4 @@ class SlackMessage():
         logger.info(json.dumps(slack_message))
         with requests.Session() as session:
             r = session.post(dest_url, data=json.dumps(slack_message))
-            logger.info("Slack API response: %s [%s]" % (r.status_code, r.reason))
+            logger.info("Slack API response: %s [%s] (%s)" % (r.status_code, r.reason, r.text))
