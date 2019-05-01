@@ -12,7 +12,7 @@ class SlackMessage():
         self.file_count = len(files)
         self.files_string = "\n".join(files)
         if len(self.files_string) > 2971:
-            self.files_string = self.files_string[:2951] # 3000 character maximum for Slack blocks (29 characters for wrap, 20 characters for truncated message)
+            self.files_string = self.files_string[:2950] # 3000 character maximum for Slack blocks (29 characters for wrap, 21 characters for truncated message)
             self.files_string += " ... [TRUNCATED LIST]"
         self.prefixes = prefixes
         self.recordcount = recordcount
