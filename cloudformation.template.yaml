@@ -31,7 +31,7 @@ Parameters:
     AllowedValues:
       - 'TRUE'
       - 'FALSE'
-  STATIC_PREFIXES:
+  STATICPREFIXES:
     Type: String
     Default: 'wydot/BSM/2019/04'
 Resources:
