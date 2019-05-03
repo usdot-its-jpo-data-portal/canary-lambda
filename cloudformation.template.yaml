@@ -41,9 +41,7 @@ Resources:
       FunctionName: CanaryLambdaProd
       Runtime: python3.7
       Handler: main.lambda_handler
-      Policies:
-        - AWSRoleforLambdaSES
-        - AWSLambdaBasicExecutionRole
+      Role: 'arn:aws:iam::016250538866:role/AWSRoleforLambdaSES'
       Environment:
         Variables:
           S3_BUCKET: !Ref S3BUCKET
