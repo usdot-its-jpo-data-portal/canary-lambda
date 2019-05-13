@@ -74,7 +74,10 @@ def validate(local_test, context):
         record_list = extract_records_from_file(s3_client, filename, local_test)
         for record in record_list:
             records_analyzed += 1
-            msg_queue.put(str(record, 'utf-8'))
+            if local_test:
+                msg_queue.put(record)
+            else:
+                msg_queue.put(str(record, 'utf-8'))
 
         if msg_queue.qsize() == 0:
             logger.warning("Could not find any records to be validated in S3 file '%s'." % filename)
@@ -175,4 +178,4 @@ def list_s3_objects(s3_client, prefix_string, continuation_token=None):
 
 if __name__ == '__main__':
     print("(Local test) Running local test...")
-    validate(local_test=True)
+    validate(local_test=True, context=None)
