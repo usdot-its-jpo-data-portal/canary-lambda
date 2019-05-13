@@ -89,12 +89,12 @@ def validate(local_test, context):
         num_errors = 0
         num_validations = 0
         error_dict = {}
-        for result in validation_results['Results']:
-            num_validations += len(result['Validations'])
-            for validation in result['Validations']:
-                if validation['Valid'] == False:
+        for result in validation_results:
+            num_validations += len(result.field_validations)
+            for validation in result.field_validations:
+                if validation.valid == False:
                     num_errors += 1
-                    validation_message = validation['Details']
+                    validation_message = validation.details
                     if validation_message in error_dict:
                         error_dict[validation_message] += 1
                     else:
