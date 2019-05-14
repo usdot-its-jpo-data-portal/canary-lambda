@@ -21,6 +21,7 @@ SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK')
 VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT') == 'TRUE' else False
 USE_STATIC_PREFIXES = True if os.environ.get('USE_STATIC_PREFIXES') == 'TRUE' else False
 STATIC_PREFIXES = os.environ.get('STATIC_PREFIXES').split(',')
+DAY_OFFSET = int(os.environ.get('DAY_OFFSET'))
 
 ### Local testing settings
 LOCAL_TEST_FILE = "test/data.txt"
@@ -47,7 +48,7 @@ def validate(local_test, context):
     if USE_STATIC_PREFIXES:
         prefix_strings.extend(STATIC_PREFIXES)
     else:
-        ddate = datetime.now(timezone.utc)
+        ddate = datetime.now(timezone.utc)+datetime.timedelta(days=DAY_OFFSET)
         for provider in DATA_PROVIDERS:
             for mtype in MESSAGE_TYPES:
                 prefix_strings.append("%s/%s/%s/%s/%s" % (provider, mtype, ddate.year, str(ddate.month).zfill(2), str(ddate.day).zfill(2)))

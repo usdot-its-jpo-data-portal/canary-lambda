@@ -51,16 +51,17 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 
 These configuration properties are sourced from environment variables. To set them locally, run `export PROPERTY_NAME=Value`, or change them in the **Environment variables** section in the AWS Lambda console.
 
-| Property            | Type             | Default Value | Description                                                                                 |
-| ------------------- | ---------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| VERBOSE_OUTPUT      | Boolean          | False         | Increases logging verbosity. Useful for debugging.                                          |
-| USE_STATIC_PREFIXES | Boolean          | False         | Overrides the default behavior which is to query for files uploaded today.                  |
-| STATIC_PREFIXES     | Array of strings | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                         |
-| S3_BUCKET           | String           | n/a           | Name of the S3 bucket containing data to be validated.                                      |
-| DATA_PROVIDERS      | Array of strings | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed. |
-| MESSAGE_TYPES       | Array of strings | ["bsm"]       | Message type(s) to be analyzed.                                                             |
-| SEND_SLACK_MESSAGE  | Boolean          | True          | Upon completion, function will send execution report to slack.                              |
-| SLACK_WEBHOOK       | String           | n/a           | **WARNING - SECRET!** Slack app integration webhook url to which reports are sent.          |
+| Property            | Type             | Default Value | Description                                                                                                             |
+| ------------------- | ---------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| VERBOSE_OUTPUT      | Boolean          | False         | Increases logging verbosity. Useful for debugging.                                                                      |
+| USE_STATIC_PREFIXES | Boolean          | False         | Overrides the default behavior which is to query for files uploaded today.                                              |
+| STATIC_PREFIXES     | Array of strings | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                                                     |
+| S3_BUCKET           | String           | n/a           | Name of the S3 bucket containing data to be validated.                                                                  |
+| DATA_PROVIDERS      | Array of strings | ["wydot"]     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed.                             |
+| MESSAGE_TYPES       | Array of strings | ["bsm"]       | Message type(s) to be analyzed.                                                                                         |
+| SEND_SLACK_MESSAGE  | Boolean          | True          | Upon completion, function will send execution report to slack.                                                          |
+| SLACK_WEBHOOK       | String           | n/a           | **WARNING - SECRET!** Slack app integration webhook url to which reports are sent.                                      |
+| DAY_OFFSET          | Integer          | -1            | How many days after today should the timestamp be offset. Default to yesterday. Useful when working with CRON triggers. |
 
 ## Usage
 

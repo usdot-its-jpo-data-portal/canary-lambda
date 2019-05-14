@@ -34,6 +34,9 @@ Parameters:
   STATICPREFIXES:
     Type: String
     Default: 'wydot/BSM/2019/04'
+  DAYOFFSET:
+    Type: String
+    Default: '-1'
 Resources:
   CanaryFunction:
     Type: 'AWS::Serverless::Function'
@@ -52,6 +55,7 @@ Resources:
           VERBOSE_OUTPUT: !Ref VERBOSEOUTPUT
           USE_STATIC_PREFIXES: !Ref USESTATICPREFIXES
           STATIC_PREFIXES: !Ref STATICPREFIXES
+          DAY_OFFSET: !Ref DAYOFFSET
     Events:
       RunCanaryDaily:
         Type: Schedule
