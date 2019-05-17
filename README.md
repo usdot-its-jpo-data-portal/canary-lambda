@@ -42,7 +42,7 @@ git clone https://github.com/usdot-its-jpo-data-portal/canary-lambda.git
 2. Upload the `canary.zip` file
 ![Lambda ZIP Upload](images/figure1.png "Lambda ZIP Upload")
 3. Set the Execution role to one that has the S3 and SES permissions listed in the **Requirements** section above.
-4. Set the **Memory (MB)** to `512 MB` and the **Timeout** to `1 min 0 sec`.
+4. Recommended resource settings: **Memory (MB)** `896 MB` and **Timeout** `15 min 0 sec`.
 ![Lambda Settings](images/figure2.png "Lambda Settings")
 5. Set the environment variables.
 ![Environment Variables](images/figure3.png "Environment Variables")
@@ -65,12 +65,8 @@ These configuration properties are sourced from environment variables. To set th
 
 ## Usage
 
-Run the function on a schedule by [setting up a CRON-triggered CloudWatch event](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html). (Note that the Cloudformation template includes a once-a-day CloudWatch trigger event at 11:59PM UTC).
+Run the function on a schedule by [setting up a CRON-triggered CloudWatch event](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html). (Note that the Cloudformation template includes a once-a-day CloudWatch trigger event at 12:01AM UTC).
 
 ## Testing
 
 Run a local test by running the function as a standard python3 script: `python main.py`.
-
-## Limitations
-
-- Cannot validate REST API TIMs

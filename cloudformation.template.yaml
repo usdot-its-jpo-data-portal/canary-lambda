@@ -60,4 +60,4 @@ Resources:
       RunCanaryDaily:
         Type: Schedule
         Properties:
-          Schedule: cron(59 23 ? * * *) # Run once at the end of the day at 11:59PM UTC (7:59 PM EST)
+          Schedule: cron(01 00 ? * * *) # Run once at the end of the day at 11:59PM UTC (7:59 PM EST)
