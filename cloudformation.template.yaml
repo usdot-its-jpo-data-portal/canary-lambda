@@ -9,7 +9,7 @@ Parameters:
     Default: 'wydot'
   MESSAGETYPES:
     Type: String
-    Default: 'BSM'
+    Default: 'BSM,TIM'
   SLACKWEBHOOK :
     Type : 'AWS::SSM::Parameter::Value<String>'
     Default: SlackWebhook
