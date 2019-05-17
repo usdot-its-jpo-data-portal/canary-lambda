@@ -53,13 +53,13 @@ These configuration properties are sourced from environment variables. To set th
 
 | Property            | Type             | Default Value | Description                                                                                                             |
 | ------------------- | ---------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| VERBOSE_OUTPUT      | Boolean          | False         | Increases logging verbosity. Useful for debugging.                                                                      |
-| USE_STATIC_PREFIXES | Boolean          | False         | Overrides the default behavior which is to query for files uploaded today.                                              |
+| VERBOSE_OUTPUT      | Boolean          | FALSE         | Increases logging verbosity. Useful for debugging.                                                                      |
+| USE_STATIC_PREFIXES | Boolean          | FALSE         | Overrides the default behavior which is to query for files uploaded today.                                              |
 | STATIC_PREFIXES     | Array of strings | n/a           | Used with USE_STATIC_PREFIXES to override which files are analyzed.                                                     |
 | S3_BUCKET           | String           | n/a           | Name of the S3 bucket containing data to be validated.                                                                  |
 | DATA_PROVIDERS      | Array of strings | wydot     | Name(s) of the data providers, used to change which file uploader's data is to be analyzed.                             |
 | MESSAGE_TYPES       | Array of strings | BSM,TIM       | Message type(s) to be analyzed.                                                                                         |
-| SEND_SLACK_MESSAGE  | Boolean          | True          | Upon completion, function will send execution report to slack.                                                          |
+| SEND_SLACK_MESSAGE  | Boolean          | TRUE          | Upon completion, function will send execution report to slack.                                                          |
 | SLACK_WEBHOOK       | String           | n/a           | **WARNING - SECRET!** Slack app integration webhook url to which reports are sent.                                      |
 | DAY_OFFSET          | Integer          | -1            | How many days after today should the timestamp be offset. Default to yesterday. Useful when working with CRON triggers. |
 
