@@ -69,6 +69,7 @@ def validate(local_test, context):
     total_validations_failed = 0
     records_analyzed = 0
     msg_queue = queue.Queue()
+    error_list = []
     for filename in s3_file_list:
         logger.info("============================================================================")
         logger.info("Analyzing file '%s'" % filename)
@@ -95,11 +96,7 @@ def validate(local_test, context):
             for validation in result.field_validations:
                 if validation.valid == False:
                     num_errors += 1
-                    validation_message = validation.details
-                    if validation_message in error_dict:
-                        error_dict[validation_message] += 1
-                    else:
-                        error_dict[validation_message] = 1
+                    error_dict[json.dumps(validation.serial_id)] = validation.details
 
         total_validation_count += num_validations
         total_validations_failed += num_errors
@@ -107,7 +104,8 @@ def validate(local_test, context):
             logger.error("Validation has FAILED for file '%s'. Detected %d errors out of %d total validation checks." % (filename, num_errors, num_validations))
             if VERBOSE_OUTPUT:
                 for error in error_dict:
-                    logger.error("[Error: '%s', Occurrences: '%d'" % (error, error_dict[error]))
+                    error_list.append("SerialID: '%s', Error: '%s'" % (error, error_dict[error]))
+                logger.info("\n".join(error_list))
             logger.error("============================================================================")
         else:
             logger.info("Validation has PASSED for file '%s'. Detected no errors out and performed %d total validation checks." % (filename, num_validations))
@@ -118,10 +116,11 @@ def validate(local_test, context):
         slack_message = SlackMessage(
             success = total_validations_failed == 0,
             prefixes = prefix_strings,
-            files = s3_file_list,
+            filecount = len(s3_file_list),
             recordcount = records_analyzed,
             validationcount = total_validation_count,
             errorcount = total_validations_failed,
+            errorstring = "\n\n".join(error_list),
             starttime = function_start_time,
             endtime = datetime.now(),
             function_name = context.function_name,
