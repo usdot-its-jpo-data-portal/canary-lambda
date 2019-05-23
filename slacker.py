@@ -2,18 +2,17 @@ from botocore.vendored import requests
 import json
 
 class SlackMessage():
-    def __init__(self, success, files, prefixes, recordcount, validationcount, errorcount, starttime, endtime, function_name, aws_request_id, log_group_name, log_stream_name):
+    def __init__(self, success, prefixes, filecount, recordcount, validationcount, errorcount, errorstring, starttime, endtime, function_name, aws_request_id, log_group_name, log_stream_name):
         if success and validationcount > 0:
             self.validation = "PASSED"
         elif success and validationcount == 0:
             self.validation = "N/A"
         else:
             self.validation = "FAILED"
-        self.file_count = len(files)
-        self.files_string = "\n".join(files)
-        if len(self.files_string) > 2971:
-            self.files_string = self.files_string[:2948] # 3000 character maximum for Slack blocks (31 characters for wrap, 21 characters for truncated message)
-            self.files_string += " ... [TRUNCATED LIST]"
+        self.filecount = filecount
+        self.errorstring = "*Failed Validations:* ```%s```" % errorstring
+        if len(self.errorstring) > 2950:
+            self.errorstring = self.errorstring[:2950] + " ... [TRUNCATED LIST]"
         self.prefixes = prefixes
         self.recordcount = recordcount
         self.validationcount = validationcount
@@ -49,7 +48,7 @@ class SlackMessage():
             		"type": "section",
             		"text": {
             			"type": "mrkdwn",
-            			"text": "*Files Analyzed (%d):* ```%s```" % (self.file_count, self.files_string)
+            			"text": "*Files Analyzed:* %d" % self.filecount
             		}
             	},
                 {
@@ -71,6 +70,13 @@ class SlackMessage():
             		"text": {
             			"type": "mrkdwn",
             			"text": "*Validations Failed:* %d" % self.errorcount
+            		}
+            	},
+                {
+            		"type": "section",
+            		"text": {
+            			"type": "mrkdwn",
+            			"text": self.errorstring
             		}
             	},
                 {
