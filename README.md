@@ -70,3 +70,18 @@ Run the function on a schedule by [setting up a CRON-triggered CloudWatch event]
 ## Testing
 
 Run a local test by running the function as a standard python3 script: `python main.py`.
+
+## Release Notes
+
+### Version 0.0.3
+- Added error list to output
+- Added serialID to output
+- Removed file list from output
+
+### Version 0.0.2
+- Added `DAY_OFFSET` configuration property to allow the canary to automatically analyze data from days different than the current one
+- Updated canary with support for latest [odevalidator v0.0.4](https://github.com/usdot-jpo-ode/ode-output-validator-library/releases/tag/odevalidator-0.0.4) library changes (including support for analyzing TIMs)
+- Bugfixes and cleanup
+
+### Version 0.0.1
+- Initial functional version
