@@ -2,3 +2,4 @@
 *.ini
 *.zip
 __pycache__/
+virtualenv/
