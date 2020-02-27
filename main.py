@@ -77,6 +77,9 @@ def sqs_validate(event, context):
         sqs_message_body = json.loads(sqs_message['body'])
         bucket = sqs_message_body['bucket']
         file_key = sqs_message_body['key']
+        pilot_name = sqs_message_body['pilot_name']
+        message_type = sqs_message_body['message_type']
+
         logger.info("Processing data file with path: %s/%s" % (bucket, file_key))
         msg_queue = queue.Queue()
         record_list = extract_records_from_file(s3_client, file_key, bucket, False)
@@ -90,7 +93,11 @@ def sqs_validate(event, context):
         # serialized_results = json.dumps(jsonified_validation_results)
 
         # Send off results
-        msg = {'key': "%s/%s" % (bucket, file_key), 'results': jsonified_validation_results}
+        msg = {
+            'key': "%s/%s" % (bucket, file_key),
+            'results': jsonified_validation_results,
+            'data_group': '{}:{}'.format(pilot_name, message_type)
+        }
         msg_group_id = str(uuid.uuid4())
         logger.debug("Publishing results to queue with MessageGroupId = %s." % msg_group_id)
         # logger.debug("Message size: %d" % len(jsonified_validation_results))
