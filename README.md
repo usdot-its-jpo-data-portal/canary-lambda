@@ -155,4 +155,4 @@ Run a local test by running the function as a standard python3 script: `python m
 - Bugfixes and cleanup
 
 ### Version 0.0.1
-- Initial functional version
+- Initial functional version 
