@@ -41,6 +41,8 @@ else:
     ### Local testing settings
     LOCAL_TEST_FILE = "test/data.txt"
 
+VALIDATING_PILOTS = ['wydot']
+
 # Setup logger
 root = logging.getLogger()
 if root.handlers: # Remove default AWS Lambda logging configuration
@@ -81,18 +83,20 @@ def sqs_validate(event, context):
         message_type = sqs_message_body['message_type']
 
         logger.info("Processing data file with path: %s/%s" % (bucket, file_key))
-        msg_queue = queue.Queue()
         record_list = extract_records_from_file(s3_client, file_key, bucket, False)
         logger.debug("Found %d records in file." % len(record_list))
-        for record in record_list:
-            msg_queue.put(str(record, 'utf-8'))
-        if pilot_name == 'wydot':
+
+        if pilot_name in VALIDATING_PILOTS:
+            msg_queue = queue.Queue()
+            for record in record_list:
+                msg_queue.put(str(record, 'utf-8'))
             validation_results = test_case.validate_queue(msg_queue)
+            jsonified_validation_results = [result.to_json() for result in validation_results]
         else:
-            validation_results = test_case.validate_queue(msg_queue, skip=True)
-        jsonified_validation_results = []
-        for result in validation_results:
-            jsonified_validation_results.append(result.to_json())
+            jsonified_validation_results = [
+                {"SerialId": idx, "Validations": [], "Record": str(record, 'utf-8')}
+                 for idx,record in enumerate(record_list)
+            ]
         # serialized_results = json.dumps(jsonified_validation_results)
 
         # Send off results
