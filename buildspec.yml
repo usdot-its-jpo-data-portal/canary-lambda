@@ -18,7 +18,7 @@ phases:
       - docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t $IMAGE_URI:$IMAGE_TAG .
       - |
         if [ "$CODEBUILD_GIT_BRANCH" = "master" ] || [ "$CODEBUILD_GIT_BRANCH" = "development" ]; then
-          ./docker-run.sh
+          bash docker-run.sh
           docker push "$IMAGE_URI:$IMAGE_TAG";
           docker tag "$IMAGE_URI:$IMAGE_TAG" "$IMAGE_URI:latest"
           docker push "$IMAGE_URI:latest";
