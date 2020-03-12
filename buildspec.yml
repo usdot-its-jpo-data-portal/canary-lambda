@@ -19,6 +19,8 @@ phases:
       - |
         if [ "$CODEBUILD_GIT_BRANCH" = "master" ] || [ "$CODEBUILD_GIT_BRANCH" = "development" ]; then
           docker run --rm \
+            -e AWS_DEFAULT_REGION \
+            -e AWS_CONTAINER_CREDENTIALS_RELATIVE_URI \
             -e "BUCKET=$BUCKET" \
             -e "FUNCTION_NAME=$FUNCTION_NAME" \
             -e "REGION=$AWS_DEFAULT_REGION" \
