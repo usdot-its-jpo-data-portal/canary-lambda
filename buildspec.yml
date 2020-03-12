@@ -18,16 +18,7 @@ phases:
       - docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t $IMAGE_URI:$IMAGE_TAG .
       - |
         if [ "$CODEBUILD_GIT_BRANCH" = "master" ] || [ "$CODEBUILD_GIT_BRANCH" = "development" ]; then
-          echo ${!PARAMETER_OVERRIDES}
-          docker run --rm \
-            -e AWS_DEFAULT_REGION \
-            -e AWS_CONTAINER_CREDENTIALS_RELATIVE_URI \
-            -e "BUCKET=$BUCKET" \
-            -e "FUNCTION_NAME=$FUNCTION_NAME" \
-            -e "REGION=$AWS_DEFAULT_REGION" \
-            -e "ENV=$ENV" \
-            -e "PARAMETER_OVERRIDES=${PARAMETER_OVERRIDES}" \
-            -i $IMAGE_URI:$IMAGE_TAG;
+          ./docker-run.sh
           docker push "$IMAGE_URI:$IMAGE_TAG";
           docker tag "$IMAGE_URI:$IMAGE_TAG" "$IMAGE_URI:latest"
           docker push "$IMAGE_URI:latest";
