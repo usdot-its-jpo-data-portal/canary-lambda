@@ -1,6 +1,14 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 Parameters:
+  ENV:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - generic
+      - dev
+      - stage
+      - prod
   VERBOSEOUTPUT:
     Type: String
     Default: "TRUE"
@@ -23,12 +31,15 @@ Resources:
   CanaryFunction:
     Type: "AWS::Serverless::Function"
     Properties:
+      CodeUri: src
       FunctionName: !Sub
         - canary-lambda-${AWS_ENV}
         - { AWS_ENV: !Ref ENV }
       Runtime: python3.8
       Handler: main.lambda_handler
-      Role: "{{resolve:ssm:lambda-role-arn:1}}"
+      Role: "{{resolve:ssm:lambda-sqs-role-arn:1}}"
+      Timeout: 120
+      MemorySize: 896
       Environment:
         Variables:
           VERBOSE_OUTPUT: !Ref VERBOSEOUTPUT
