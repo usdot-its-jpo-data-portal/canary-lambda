@@ -12,10 +12,10 @@ from slacker import SlackMessage
 from sqs_client import SQSClientExtended
 
 # Logger settings
-VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT') == 'TRUE' else False
+VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT').upper() == 'TRUE' else False
 
 ### Set this variable to FALSE to deactivate (will switch to direct-query mode)
-SQS_PUBLISHER_MODE = False if os.environ.get('SQS_PUBLISHER_MODE') == 'FALSE' else True
+SQS_PUBLISHER_MODE = False if os.environ.get('SQS_PUBLISHER_MODE').upper() == 'FALSE' else True
 
 if SQS_PUBLISHER_MODE:
     SQS_RESULT_QUEUE = os.environ.get('SQS_RESULT_QUEUE')

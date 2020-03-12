@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Parameters:
+  ENV:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - generic
+      - dev
+      - stage
+      - prod
+  VERBOSEOUTPUT:
+    Type: String
+    Default: "TRUE"
+    AllowedValues:
+      - "TRUE"
+      - "FALSE"
+  SQSPUBLISHERMODE:
+    Type: String
+    Default: "TRUE"
+    AllowedValues:
+      - "TRUE"
+      - "FALSE"
+  SQSRESULTQUEUE:
+    Type: String
+  SQSSTORAGES3BUCKET:
+    Type: String
+  SQSVALIDATIONQUEUEARN:
+    Type: String
+Resources:
+  CanaryFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: src
+      FunctionName: !Sub
+        - canary-lambda-${AWS_ENV}
+        - { AWS_ENV: !Ref ENV }
+      Runtime: python3.8
+      Handler: main.lambda_handler
+      Role: "{{resolve:ssm:lambda-sqs-role-arn:1}}"
+      Timeout: 120
+      MemorySize: 896
+      Environment:
+        Variables:
+          VERBOSE_OUTPUT: !Ref VERBOSEOUTPUT
+          SQS_PUBLISHER_MODE: !Ref SQSPUBLISHERMODE
+          SQS_RESULT_QUEUE: !Ref SQSRESULTQUEUE
+          SQS_STORAGE_S3_BUCKET: !Ref SQSSTORAGES3BUCKET
+
+  CanaryTriggerEventSQS:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !Ref SQSVALIDATIONQUEUEARN
+      FunctionName: !GetAtt CanaryFunction.Arn
