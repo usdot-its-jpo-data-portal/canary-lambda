@@ -86,7 +86,10 @@ def sqs_validate(event, context):
         logger.debug("Found %d records in file." % len(record_list))
         for record in record_list:
             msg_queue.put(str(record, 'utf-8'))
-        validation_results = test_case.validate_queue(msg_queue)
+        if pilot_name == 'wydot':
+            validation_results = test_case.validate_queue(msg_queue)
+        else:
+            validation_results = test_case.validate_queue(msg_queue, skip=True)
         jsonified_validation_results = []
         for result in validation_results:
             jsonified_validation_results.append(result.to_json())
