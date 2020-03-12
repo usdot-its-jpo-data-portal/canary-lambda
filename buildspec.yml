@@ -25,7 +25,7 @@ phases:
             -e "FUNCTION_NAME=$FUNCTION_NAME" \
             -e "REGION=$AWS_DEFAULT_REGION" \
             -e "ENV=$ENV" \
-            -e "PARAMETER_OVERRIDES=$PARAMETER_OVERRIDES" \
+            -e "PARAMETER_OVERRIDES=${PARAMETER_OVERRIDES}" \
             -i $IMAGE_URI:$IMAGE_TAG;
           docker push "$IMAGE_URI:$IMAGE_TAG";
           docker tag "$IMAGE_URI:$IMAGE_TAG" "$IMAGE_URI:latest"
