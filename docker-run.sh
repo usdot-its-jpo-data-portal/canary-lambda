@@ -1,5 +1,4 @@
 #!/bin/bash
-source .env
 PARAMETER_OVERRIDES=$(eval echo $PARAMETER_OVERRIDES)
 docker run --rm \
     -e AWS_DEFAULT_REGION \
