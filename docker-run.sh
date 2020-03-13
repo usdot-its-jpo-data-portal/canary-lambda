@@ -1,4 +1,5 @@
 #!/bin/bash
+echo ${!PARAMETER_OVERRIDES}
 docker run --rm \
 -e AWS_DEFAULT_REGION \
 -e AWS_CONTAINER_CREDENTIALS_RELATIVE_URI \
