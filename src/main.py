@@ -12,10 +12,10 @@ from slacker import SlackMessage
 from sqs_client import SQSClientExtended
 
 # Logger settings
-VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT') == 'TRUE' else False
+VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT').upper() == 'TRUE' else False
 
 ### Set this variable to FALSE to deactivate (will switch to direct-query mode)
-SQS_PUBLISHER_MODE = False if os.environ.get('SQS_PUBLISHER_MODE') == 'FALSE' else True
+SQS_PUBLISHER_MODE = False if os.environ.get('SQS_PUBLISHER_MODE').upper() == 'FALSE' else True
 
 if SQS_PUBLISHER_MODE:
     SQS_RESULT_QUEUE = os.environ.get('SQS_RESULT_QUEUE')
@@ -40,6 +40,8 @@ else:
 
     ### Local testing settings
     LOCAL_TEST_FILE = "test/data.txt"
+
+VALIDATING_PILOTS = ['wydot']
 
 # Setup logger
 root = logging.getLogger()
@@ -77,20 +79,32 @@ def sqs_validate(event, context):
         sqs_message_body = json.loads(sqs_message['body'])
         bucket = sqs_message_body['bucket']
         file_key = sqs_message_body['key']
+        pilot_name = sqs_message_body['pilot_name']
+        message_type = sqs_message_body['message_type']
+
         logger.info("Processing data file with path: %s/%s" % (bucket, file_key))
-        msg_queue = queue.Queue()
         record_list = extract_records_from_file(s3_client, file_key, bucket, False)
         logger.debug("Found %d records in file." % len(record_list))
-        for record in record_list:
-            msg_queue.put(str(record, 'utf-8'))
-        validation_results = test_case.validate_queue(msg_queue)
-        jsonified_validation_results = []
-        for result in validation_results:
-            jsonified_validation_results.append(result.to_json())
+
+        if pilot_name in VALIDATING_PILOTS:
+            msg_queue = queue.Queue()
+            for record in record_list:
+                msg_queue.put(str(record, 'utf-8'))
+            validation_results = test_case.validate_queue(msg_queue)
+            jsonified_validation_results = [result.to_json() for result in validation_results]
+        else:
+            jsonified_validation_results = [
+                {"SerialId": idx, "Validations": [], "Record": str(record, 'utf-8')}
+                 for idx,record in enumerate(record_list)
+            ]
         # serialized_results = json.dumps(jsonified_validation_results)
 
         # Send off results
-        msg = {'key': "%s/%s" % (bucket, file_key), 'results': jsonified_validation_results}
+        msg = {
+            'key': "%s/%s" % (bucket, file_key),
+            'results': jsonified_validation_results,
+            'data_group': '{}:{}'.format(pilot_name, message_type)
+        }
         msg_group_id = str(uuid.uuid4())
         logger.debug("Publishing results to queue with MessageGroupId = %s." % msg_group_id)
         # logger.debug("Message size: %d" % len(jsonified_validation_results))
