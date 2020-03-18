@@ -9,7 +9,7 @@ import uuid
 from decimal import Decimal
 from odevalidator import TestCase
 from slacker import SlackMessage
-from sqs_client import SQSClientExtended
+from pysqs_extended_client.SQSClientExtended import SQSClientExtended
 
 # Logger settings
 VERBOSE_OUTPUT = True if os.environ.get('VERBOSE_OUTPUT').upper() == 'TRUE' else False

@@ -1,1 +1,2 @@
-git+https://github.com/usdot-jpo-ode/ode-output-validator-library@master#egg=odevalidator
+git+https://github.com/usdot-its-jpo-data-portal/ode-output-validator-library@master#egg=odevalidator
+pysqs-extended-client

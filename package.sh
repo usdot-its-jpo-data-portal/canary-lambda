@@ -3,9 +3,9 @@
 # NOTE!
 # This script is deprecated and was intended for manual deployment packaging,
 # Refer to the Dockerfile of this repository for the updated deployment process.
-
-pip install -r requirements.txt --upgrade --target .
-ls odevalidator
-zip -r canary.zip main.py slacker.py odevalidator*/ sqs_client/
-rm -rf odevalidator*/
+mkdir _package
+pip install -r src/requirements.txt --upgrade --target _package
+cp src/* _package/
+zip -r canary.zip _package/
+rm -rf _package/
 echo "Created package in canary.zip"
