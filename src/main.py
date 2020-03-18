@@ -63,7 +63,7 @@ def lambda_handler(event, context):
 
 def sqs_validate(event, context):
 
-    sqs_extended = SQSClientExtended.SQSClientExtended(s3_bucket_name=SQS_STORAGE_S3_BUCKET)
+    sqs_extended = SQSClientExtended(s3_bucket_name=SQS_STORAGE_S3_BUCKET)
 
     logger.debug("Received SQS event: %s" % event)
 

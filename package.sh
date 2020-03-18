@@ -6,6 +6,6 @@
 mkdir _package
 pip install -r src/requirements.txt --upgrade --target _package
 cp src/* _package/
-zip -r canary.zip _package/
+zip -r canary.zip _package/*
 rm -rf _package/
 echo "Created package in canary.zip"
