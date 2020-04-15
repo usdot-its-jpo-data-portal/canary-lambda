@@ -76,7 +76,6 @@ def sqs_validate(event, context):
         for pilot, messageType in VALIDATING_PILOTS
     }
 
-
     logger.info("SQS event received. Number of records in SQS event: %d" % len(event['Records']))
 
     for sqs_message in event['Records']:
