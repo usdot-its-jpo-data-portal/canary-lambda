@@ -21,7 +21,7 @@ After the canary completes its validation, it publishes the results to an output
 - [AWS Lambda Access](https://aws.amazon.com/lambda/)
 - S3 folder for storing large SQS messages
 - SQS queue for filepath notifications (source queue)
-- SQS queue for results publishing (non-FIFO) queue for message publishing (sink queue)
+- SQS queue for results publishing (FIFO) queue for message publishing (sink queue)
 - [S3 IAM role with lenient permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazons3.html)
   - `s3:*`
 - [SQS IAM role with lenient permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazonsqs.html)
