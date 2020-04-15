@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import logging
 import os
+import pkg_resources
 import pickle
 import queue
 import uuid
@@ -41,7 +42,7 @@ else:
     ### Local testing settings
     LOCAL_TEST_FILE = "test/data.txt"
 
-VALIDATING_PILOTS = ['wydot']
+VALIDATING_PILOTS = [('wydot', 'bsm'), ('wydot', 'tim'), ('thea', 'bsm'), ('thea', 'tim'), ('thea', 'spat')]
 
 # Setup logger
 root = logging.getLogger()
@@ -70,7 +71,11 @@ def sqs_validate(event, context):
     s3_client = boto3.client('s3')
     sqs_client = boto3.client('sqs')
     results_queue = boto3.resource('sqs').get_queue_by_name(QueueName=SQS_RESULT_QUEUE)
-    test_case = TestCase()
+    test_case_dict = {'{}_{}'.format(pilot, messageType):
+        TestCase(pkg_resources.resource_filename('odevalidator', 'configs/config_{}_{}.ini'.format(pilot, messageType)))
+        for pilot, messageType in VALIDATING_PILOTS
+    }
+
 
     logger.info("SQS event received. Number of records in SQS event: %d" % len(event['Records']))
 
@@ -81,12 +86,14 @@ def sqs_validate(event, context):
         file_key = sqs_message_body['key']
         pilot_name = sqs_message_body['pilot_name']
         message_type = sqs_message_body['message_type']
+        test_case_key = '{}_{}'.format(pilot_name.lower(), message_type.lower())
 
         logger.info("Processing data file with path: %s/%s" % (bucket, file_key))
         record_list = extract_records_from_file(s3_client, file_key, bucket, False)
         logger.debug("Found %d records in file." % len(record_list))
 
-        if pilot_name in VALIDATING_PILOTS:
+        if test_case_key in test_case_dict:
+            test_case = test_case_dict[test_case_key]
             msg_queue = queue.Queue()
             for record in record_list:
                 msg_queue.put(str(record, 'utf-8'))
