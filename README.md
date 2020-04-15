@@ -141,6 +141,10 @@ Run a local test by running the function as a standard python3 script: `python m
 
 # Release Notes
 
+### Version 0.0.5
+- Send result to FIFO SQS queue
+- Expand canary validation to work with different data schemas depending on pilot name and message type
+
 ### Version 0.0.4
 - Added SQS publisher mode
 
@@ -155,4 +159,4 @@ Run a local test by running the function as a standard python3 script: `python m
 - Bugfixes and cleanup
 
 ### Version 0.0.1
-- Initial functional version 
+- Initial functional version
