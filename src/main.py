@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import logging
 import os
+import pkg_resources
 import pickle
 import queue
 import uuid
@@ -41,7 +42,7 @@ else:
     ### Local testing settings
     LOCAL_TEST_FILE = "test/data.txt"
 
-VALIDATING_PILOTS = ['wydot']
+VALIDATING_PILOTS = [('wydot', 'bsm'), ('wydot', 'tim'), ('thea', 'bsm'), ('thea', 'tim'), ('thea', 'spat')]
 
 # Setup logger
 root = logging.getLogger()
@@ -70,7 +71,10 @@ def sqs_validate(event, context):
     s3_client = boto3.client('s3')
     sqs_client = boto3.client('sqs')
     results_queue = boto3.resource('sqs').get_queue_by_name(QueueName=SQS_RESULT_QUEUE)
-    test_case = TestCase()
+    test_case_dict = {'{}_{}'.format(pilot, messageType):
+        TestCase(pkg_resources.resource_filename('odevalidator', 'configs/config_{}_{}.ini'.format(pilot, messageType)))
+        for pilot, messageType in VALIDATING_PILOTS
+    }
 
     logger.info("SQS event received. Number of records in SQS event: %d" % len(event['Records']))
 
@@ -81,12 +85,14 @@ def sqs_validate(event, context):
         file_key = sqs_message_body['key']
         pilot_name = sqs_message_body['pilot_name']
         message_type = sqs_message_body['message_type']
+        test_case_key = '{}_{}'.format(pilot_name.lower(), message_type.lower())
 
         logger.info("Processing data file with path: %s/%s" % (bucket, file_key))
         record_list = extract_records_from_file(s3_client, file_key, bucket, False)
         logger.debug("Found %d records in file." % len(record_list))
 
-        if pilot_name in VALIDATING_PILOTS:
+        if test_case_key in test_case_dict:
+            test_case = test_case_dict[test_case_key]
             msg_queue = queue.Queue()
             for record in record_list:
                 msg_queue.put(str(record, 'utf-8'))
@@ -105,16 +111,20 @@ def sqs_validate(event, context):
             'results': jsonified_validation_results,
             'data_group': '{}:{}'.format(pilot_name, message_type)
         }
-        msg_group_id = str(uuid.uuid4())
-        logger.debug("Publishing results to queue with MessageGroupId = %s." % msg_group_id)
-        # logger.debug("Message size: %d" % len(jsonified_validation_results))
+        logger.debug("Publishing results to queue with MessageGroupId = %s." % SQS_RESULT_QUEUE)
 
         logger.debug("Querying for URL of result queue...")
         result_queue_url = sqs_client.get_queue_url(QueueName=SQS_RESULT_QUEUE)['QueueUrl']
         logger.debug("Found results queue URL from query: %s" % result_queue_url)
 
         logger.debug("Publishing results to SQS queue...")
-        sqs_extended.send_message(queue_url=result_queue_url, message=json.dumps(msg), message_attributes={})
+        sqs_extended.send_message(
+            queue_url=result_queue_url,
+            message_body=json.dumps(msg),
+            message_group_id=SQS_RESULT_QUEUE,
+            message_deduplication_id=str(uuid.uuid4()),
+            message_attributes={}
+        )
         logger.info("Validation results successfully published to results SQS queue.")
 
         # Delete file message from queue

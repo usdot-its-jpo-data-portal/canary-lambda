@@ -21,7 +21,7 @@ After the canary completes its validation, it publishes the results to an output
 - [AWS Lambda Access](https://aws.amazon.com/lambda/)
 - S3 folder for storing large SQS messages
 - SQS queue for filepath notifications (source queue)
-- SQS queue for results publishing (non-FIFO) queue for message publishing (sink queue)
+- SQS queue for results publishing (FIFO) queue for message publishing (sink queue)
 - [S3 IAM role with lenient permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazons3.html)
   - `s3:*`
 - [SQS IAM role with lenient permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazonsqs.html)
@@ -141,6 +141,10 @@ Run a local test by running the function as a standard python3 script: `python m
 
 # Release Notes
 
+### Version 0.0.5
+- Send result to FIFO SQS queue
+- Expand canary validation to work with different data schemas depending on pilot name and message type
+
 ### Version 0.0.4
 - Added SQS publisher mode
 
@@ -155,4 +159,4 @@ Run a local test by running the function as a standard python3 script: `python m
 - Bugfixes and cleanup
 
 ### Version 0.0.1
-- Initial functional version 
+- Initial functional version
