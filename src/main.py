@@ -97,23 +97,33 @@ def sqs_validate(event, context):
             for record in record_list:
                 msg_queue.put(str(record, 'utf-8'))
             validation_results = test_case.validate_queue(msg_queue)
-            jsonified_validation_results = [result.to_json() for result in validation_results]
-            jsonified_validation_results = [
-                {k:v for k,v in result.items() if k != 'Record'}
-                for result in jsonified_validation_results
-            ]
+
+            # summarize validation results
+            shortened_results = []
+            for result in validation_results:
+                result = result.to_json()
+                error = [i for i in result['Validations'] if not i['Valid']]
+                temp = {
+                    'SerialId': result['SerialId'],
+                    'Validations': {
+                        'total_count': len(result['Validations']),
+                        'error_count': len(error)
+                    }
+                }
+                if error:
+                    temp['Validations']['error_details'] = error
+                shortened_results.append(temp)
             # TODO: keep track of record associated with invalid validation results in the future
         else:
-            jsonified_validation_results = [
-                {"SerialId": idx, "Validations": []}
+            shortened_results = [
+                {"SerialId": idx, "Validations": {'total_count': 0, 'error_count': 0}}
                 for idx,record in enumerate(record_list)
             ]
-        # serialized_results = json.dumps(jsonified_validation_results)
 
         # Send off results
         msg = {
             'key': "%s/%s" % (bucket, file_key),
-            'results': jsonified_validation_results,
+            'results': shortened_results,
             'data_group': '{}:{}'.format(pilot_name, message_type)
         }
         logger.debug("Publishing results to queue with MessageGroupId = %s." % SQS_RESULT_QUEUE)
