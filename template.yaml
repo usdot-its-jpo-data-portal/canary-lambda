@@ -38,8 +38,8 @@ Resources:
       Runtime: python3.8
       Handler: main.lambda_handler
       Role: "{{resolve:ssm:lambda-sqs-role-arn:1}}"
-      Timeout: 120
-      MemorySize: 896
+      Timeout: 900
+      MemorySize: 3008
       Environment:
         Variables:
           VERBOSE_OUTPUT: !Ref VERBOSEOUTPUT
