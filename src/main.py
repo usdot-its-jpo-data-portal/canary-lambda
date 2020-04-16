@@ -98,10 +98,15 @@ def sqs_validate(event, context):
                 msg_queue.put(str(record, 'utf-8'))
             validation_results = test_case.validate_queue(msg_queue)
             jsonified_validation_results = [result.to_json() for result in validation_results]
+            jsonified_validation_results = [
+                {k:v for k,v in result.items() if k != 'Record'}
+                for result in jsonified_validation_results
+            ]
+            # TODO: keep track of record associated with invalid validation results in the future
         else:
             jsonified_validation_results = [
-                {"SerialId": idx, "Validations": [], "Record": str(record, 'utf-8')}
-                 for idx,record in enumerate(record_list)
+                {"SerialId": idx, "Validations": []}
+                for idx,record in enumerate(record_list)
             ]
         # serialized_results = json.dumps(jsonified_validation_results)
 
