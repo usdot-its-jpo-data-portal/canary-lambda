@@ -102,21 +102,18 @@ def sqs_validate(event, context):
             shortened_results = []
             for result in validation_results:
                 result = result.to_json()
-                error = [i for i in result['Validations'] if not i['Valid']]
-                temp = {
-                    'SerialId': result['SerialId'],
-                    'Validations': {
-                        'total_count': len(result['Validations']),
-                        'error_count': len(error)
-                    }
-                }
-                if error:
-                    temp['Validations']['error_details'] = error
+                error = ['{}: {}'.format(i['Field'], i['Details']) for i in result['Validations'] if not i['Valid']]
+                temp = (
+                    result['SerialId'],
+                    len(result['Validations']),
+                    len(error),
+                    error
+                )
                 shortened_results.append(temp)
             # TODO: keep track of record associated with invalid validation results in the future
         else:
             shortened_results = [
-                {"SerialId": idx, "Validations": {'total_count': 0, 'error_count': 0}}
+                (idx, 0, 0, [])
                 for idx,record in enumerate(record_list)
             ]
 
