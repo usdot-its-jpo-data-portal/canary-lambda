@@ -91,6 +91,13 @@ def sqs_validate(event, context):
         record_list = extract_records_from_file(s3_client, file_key, bucket, False)
         logger.debug("Found %d records in file." % len(record_list))
 
+        shortened_results = {
+            'errors': [],
+            'num_validations': 0,
+            'num_validation_errors': 0,
+            'num_records': len(record_list),
+            'num_records_w_errors': 0
+        }
         if test_case_key in test_case_dict:
             test_case = test_case_dict[test_case_key]
             msg_queue = queue.Queue()
@@ -99,23 +106,15 @@ def sqs_validate(event, context):
             validation_results = test_case.validate_queue(msg_queue)
 
             # summarize validation results
-            shortened_results = []
             for result in validation_results:
                 result = result.to_json()
-                error = ['{}: {}'.format(i['Field'], i['Details']) for i in result['Validations'] if not i['Valid']]
-                temp = (
-                    result['SerialId'],
-                    len(result['Validations']),
-                    len(error),
-                    error
-                )
-                shortened_results.append(temp)
-            # TODO: keep track of record associated with invalid validation results in the future
-        else:
-            shortened_results = [
-                (idx, 0, 0, [])
-                for idx,record in enumerate(record_list)
-            ]
+                error = ['{}: {}: {}'.format(result['SerialId'], i['Field'], i['Details']) for i in result['Validations'] if not i['Valid']]
+                shortened_results['errors'] += error
+                shortened_results['num_validations'] += len(result['Validations'])
+                shortened_results['num_validation_errors'] += len(error)
+                if error:
+                    shortened_results['num_records_w_errors'] += 1
+                # TODO: keep track of record associated with invalid validation results in the future
 
         # Send off results
         msg = {
