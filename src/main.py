@@ -92,7 +92,7 @@ def sqs_validate(event, context):
         logger.debug("Found %d records in file." % len(record_list))
 
         shortened_results = {
-            'errors': [],
+            'errors': {},
             'num_validations': 0,
             'num_validation_errors': 0,
             'num_records': len(record_list),
@@ -107,12 +107,18 @@ def sqs_validate(event, context):
 
             # summarize validation results
             for result in validation_results:
+                hasErr = False
                 result = result.to_json()
-                error = ['{}: {}: {}'.format(result['SerialId'], i['Field'], i['Details']) for i in result['Validations'] if not i['Valid']]
-                shortened_results['errors'] += error
                 shortened_results['num_validations'] += len(result['Validations'])
-                shortened_results['num_validation_errors'] += len(error)
-                if error:
+                for i in result['Validations']:
+                    if not i['Valid']:
+                        hasErr = True
+                        errKey = '{}: {}'.format(i['Field'], i['Details'])
+                        if not errKey in shortened_results['errors']:
+                            shortened_results['errors'][errKey] = []
+                        shortened_results['errors'][errKey].append(result['SerialId'])
+                        shortened_results['num_validation_errors'] += 1
+                if hasErr:
                     shortened_results['num_records_w_errors'] += 1
                 # TODO: keep track of record associated with invalid validation results in the future
 
