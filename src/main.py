@@ -115,8 +115,8 @@ def sqs_validate(event, context):
                         hasErr = True
                         errKey = '{}: {}'.format(i['Field'], i['Details'])
                         if not errKey in shortened_results['errors']:
-                            shortened_results['errors'][errKey] = []
-                        shortened_results['errors'][errKey].append(result['SerialId'])
+                            shortened_results['errors'][errKey] = 0
+                        shortened_results['errors'][errKey] += 1
                         shortened_results['num_validation_errors'] += 1
                 if hasErr:
                     shortened_results['num_records_w_errors'] += 1
