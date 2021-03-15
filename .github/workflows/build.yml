@@ -31,6 +31,7 @@ jobs:
               pip install boto3
           - name: Run test and coverage
             env:
+              VERBOSE_OUTPUT: "TRUE"
               SQS_PUBLISHER_MODE: "FALSE"
               DATA_PROVIDERS: ""
               MESSAGE_TYPES: ""
