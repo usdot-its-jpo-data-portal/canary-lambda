@@ -28,6 +28,7 @@ jobs:
               pip install "pytest<5"
               pip install coverage
               pip install -r src/requirements.txt
+              pip install boto3
           - name: Run test and coverage
             env:
               SQS_PUBLISHER_MODE: "FALSE"
