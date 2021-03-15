@@ -1,4 +1,6 @@
 # canary-lambda
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=usdot-its-jpo-data-portal_canary-lambda&metric=alert_status)](https://sonarcloud.io/dashboard?id=usdot-its-jpo-data-portal_canary-lambda)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=usdot-its-jpo-data-portal_canary-lambda&metric=coverage)](https://sonarcloud.io/dashboard?id=usdot-its-jpo-data-portal_canary-lambda)
 
 This function has two modes: direct query mode and SQS-triggered mode. For simplicity, this README has been divided into two independent sections.
 
